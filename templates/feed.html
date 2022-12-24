@@ -1,0 +1,68 @@
+{% extends 'main.html' %}
+{% load static %}
+
+
+{% block content %}
+    <section class="main--container">
+        <form id="post_form">
+            <input type="text" name="body"/>
+        </form>
+
+        <div id="post__lists">
+            {% for post in posts %}
+                <div class="post-wrapper">
+                    <strong> Posted {{ post.created | timesince }} ago </strong>
+                    <p> {{ post.body }} </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <script type="text/javascript">
+        {#const App_Id = ""#}
+        {#const Token = ""#}
+        {#const Uid = ""#}
+        {#const Channel_Name = ""#}
+
+
+        let form = document.getElementById('post_form')
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+            let body_text = e.target.body.value
+            form.reset()
+
+            submit_data(body_text)
+        })
+
+        let submit_data = async (body_text) => {
+            let response = await fetch('/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({'body': body_text})
+            })
+            let data = await response.json()
+            console.log("Data:", data)
+            add_message_to_d(data)
+        }
+
+        let add_message_to_d = async (message) => {
+            let post_list = document.getElementById('post__lists')
+
+            let time_since = new Intl.RelativeTimeFormat('uz')
+            let diff = new Date() - new Date(message.created)
+            let ago = new time_since.format(-diff / (1000 * 60 * 60 * 24))
+
+            let post_wrapper = `<div class="post-wrapper">
+                                <strong> Posted ${time_since.format(-1, message.created)} ago </strong>
+                                <p> ${message.body} </p>
+                                </div>`
+
+            post_list.insertAdjacentHTML('afterbegin', post_wrapper)
+        }
+
+
+    </script>
+{% endblock content %}
